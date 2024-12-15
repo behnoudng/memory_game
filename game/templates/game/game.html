@@ -10,12 +10,27 @@
             height: 100px;
             border: 1px solid #000;
             text-align: center;
+            vertical-align: middle;
+            line-height: 100px;
+            font-size: 24px;
+            cursor: pointer;
+            user-select: none;
         }
 
         .grid{
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .hidden {
+            visibility: hidden;
+        }
+
+        #message {
+            font-size: 20px;
+            height: 24px; 
         }
     </style>
 </head>
@@ -33,40 +48,56 @@
             <button name="undo">Undo</button>
         </form>
     </div>
+
+    <div id="message"></div>
     
 
     <script>
-
         const cards = document.querySelectorAll('.card');
+        const messageDiv = document.getElementById('message');
         let flipped = [];
-
+        let canClick = true;
+        
         cards.forEach(card => {
             card.addEventListener('click', () => {
-                if (flipped.length < 2 && !card.classList.contains('flipped')) {
-                    card.textContent = card.dataset.value;
-                    card.classList.add('flipped');
-                    card.style.backgroundColor = 'yellow';
-                    flipped.push(card);
+                if (!canClick || card.classList.contains('flipped') || card.classList.contains('hidden')){
+                    return;
+                }
+                card.textContent = card.dataset.value;
+                card.classList.add('flipped');
+                card.style.backgroundColor = 'yellow';
+                flipped.push(card);
 
-                    if (flipped.length === 2) {
-                        // Check match
-                        if (flipped[0].dataset.value === flipped[1].dataset.value) {
-                            alert('Matched!');
-                            flipped.forEach(c => c.style.visibility = 'hidden');
-                        } else {
-                            
-                            flipped.forEach(c => {
-                                c.textContent = '';
-                                c.classList.remove('flipped');
-                                c.style.backgroundColor = '';
-                            });
-                            alert('Not a match!');
-                        }
-                        flipped = [];
+                if (flipped.length === 2){
+                    canClick = false;
+                    
+                    const [card1, card2] = flipped;
+                    if (card1.dataset.value === card2.dataset.value){
+                        messageDiv.textContent = 'Matched!';
+                        setTimeout(() => {
+                            card1.classList.add('hidden');
+                            card2.classList.add('hidden');
+                            messageDiv.textContent = '';
+                            flipped = []
+                            canClick = true;
+                        }, 1000);
+                    } else {
+                        messageDiv.textContent = 'Not a match!';
+                        setTimeout(() => {
+                            card1.textContent = '';
+                            card2.textContent = '';
+                            card1.classList.remove('flipped');
+                            card2.classList.remove('flipped');
+                            card1.style.backgroundColor = '';
+                            card2.style.backgroundColor = '';
+                            messageDiv.textContent = '';
+                            flipped = [];
+                            canClick = true;
+                        }, 1000);
                     }
                 }
-            });
-        });
+            })
+        })
 
     </script>
 </body>
