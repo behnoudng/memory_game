@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Game</title>
+    <style>
+        .card{
+            width: 100px;
+            height: 100px;
+            border: 1px solid #000;
+            text-align: center;
+        }
+
+        .grid{
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Memory Game</h1>
+    <div class="grid">
+        {% for card in cards %}
+        <div class="card" data-value="{{ card.value }}">
+            <!-- {{ card.value }} -->
+        </div>
+
+        {% endfor %}
+
+        <form method="get">
+            <button name="undo">Undo</button>
+        </form>
+    </div>
+    
+
+    <script>
+
+        const cards = document.querySelectorAll('.card');
+        let flipped = [];
+
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                if (flipped.length < 2 && !card.classList.contains('flipped')) {
+                    card.textContent = card.dataset.value;
+                    card.classList.add('flipped');
+                    card.style.backgroundColor = 'yellow';
+                    flipped.push(card);
+
+                    if (flipped.length === 2) {
+                        // Check match
+                        if (flipped[0].dataset.value === flipped[1].dataset.value) {
+                            alert('Matched!');
+                            flipped.forEach(c => c.style.visibility = 'hidden');
+                        } else {
+                            
+                            flipped.forEach(c => {
+                                c.textContent = '';
+                                c.classList.remove('flipped');
+                                c.style.backgroundColor = '';
+                            });
+                            alert('Not a match!');
+                        }
+                        flipped = [];
+                    }
+                }
+            });
+        });
+
+    </script>
+</body>
+</html>
