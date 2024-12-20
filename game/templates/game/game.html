@@ -49,6 +49,16 @@
 <body>
     <h1>Memory Game</h1>
 
+    <!-- Mode Dropdown -->
+    <form method="get" action="">
+        <label for="mode">Mode:</label>
+        <select name="mode" id="mode" onchange="this.form.submit()">
+            <option value="easy" {% if mode == 'easy' %}selected{% endif %}>Easy</option>
+            <option value="normal" {% if mode == 'normal' %}selected{% endif %}>Normal</option>
+            <option value="hard" {% if mode == 'hard' %}selected{% endif %}>Hard</option>
+        </select>
+    </form>
+
     <!-- Timer -->
     <div id="timer">Time: 0s</div>
 
@@ -78,6 +88,7 @@
         let timer = 0
         let timerInterval = null;
 
+        const currentMode = "{{ mode }}";
 
         let flipped = [];
         let canClick = true;
@@ -110,7 +121,7 @@
                 alert(`Game complete! Your time: ${completionTime}s`);
 
                 // Send the time to the server
-                fetch(`/submit-time?time=${completionTime}`)
+                fetch(`/submit-time?time=${completionTime}&mode=${currentMode}`)
                     .then((response) => response.json())
                     .then((data) => {
                         console.log(data);
