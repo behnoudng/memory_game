@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Memory Game</title>
     <style>
-        .card{
+        .card {
             width: 100px;
             height: 100px;
             border: 1px solid #000;
@@ -17,7 +18,7 @@
             user-select: none;
         }
 
-        .grid{
+        .grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
@@ -30,37 +31,98 @@
 
         #message {
             font-size: 20px;
-            height: 24px; 
+            height: 24px;
+        }
+
+        #timer {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        #top-records {
+            font-size: 18px;
+            margin-top: 20px;
         }
     </style>
 </head>
+
 <body>
     <h1>Memory Game</h1>
+
+    <!-- Timer -->
+    <div id="timer">Time: 0s</div>
+
     <div class="grid">
         {% for card in cards %}
-        <div class="card" data-value="{{ card.value }}">
-            <!-- {{ card.value }} -->
-        </div>
-
+        <div class="card" data-value="{{ card.value }}"></div>
         {% endfor %}
 
-        <form method="get">
-            <button name="undo">Undo</button>
-        </form>
     </div>
 
     <div id="message"></div>
-    
+
+    <!-- Top 3 Records -->
+    <h2>Top 3 Records</h2>
+    <ul id="top-records">
+        {% for record in top_records %}
+        <li>{{record.0}} seconds</li>
+        {% endfor %}
+    </ul>
+
 
     <script>
         const cards = document.querySelectorAll('.card');
         const messageDiv = document.getElementById('message');
+        // Timer
+        const timerDiv = document.getElementById('timer');
+        let timer = 0
+        let timerInterval = null;
+
+
         let flipped = [];
         let canClick = true;
-        
+
+
+
+        // Start the timer on first click
+        const startTimer = () => {
+            if (!timerInterval) {
+                timerInterval = setInterval(() => {
+                    timer++;
+                    timerDiv.textContent = `Time: ${timer}s`;
+
+                }, 1000);
+            }
+        };
+
+        // Stop the timer
+        const stopTimer = () =>{
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+
+        // Check if all cards are matched
+        const checkAllMatched = () => {
+            const hiddenCards = document.querySelectorAll('.card.hidden').length;
+            if (hiddenCards === cards.length) {
+                stopTimer();
+                const completionTime = timer;
+                alert(`Game complete! Your time: ${completionTime}s`);
+
+                // Send the time to the server
+                fetch(`/submit-time?time=${completionTime}`)
+                    .then((response) => response.json())
+                    .then((data) => {
+                        console.log(data);
+                        location.reload(); 
+                    });
+            }
+        };
+
         cards.forEach(card => {
             card.addEventListener('click', () => {
-                if (!canClick || card.classList.contains('flipped') || card.classList.contains('hidden')){
+                startTimer(); // Start the timer on the first click
+                if (!canClick || card.classList.contains('flipped') || card.classList.contains('hidden')) {
                     return;
                 }
                 card.textContent = card.dataset.value;
@@ -68,11 +130,11 @@
                 card.style.backgroundColor = 'yellow';
                 flipped.push(card);
 
-                if (flipped.length === 2){
+                if (flipped.length === 2) {
                     canClick = false;
-                    
+
                     const [card1, card2] = flipped;
-                    if (card1.dataset.value === card2.dataset.value){
+                    if (card1.dataset.value === card2.dataset.value) {
                         messageDiv.textContent = 'Matched!';
                         setTimeout(() => {
                             card1.classList.add('hidden');
@@ -80,6 +142,7 @@
                             messageDiv.textContent = '';
                             flipped = []
                             canClick = true;
+                            checkAllMatched();
                         }, 1000);
                     } else {
                         messageDiv.textContent = 'Not a match!';
@@ -101,4 +164,5 @@
 
     </script>
 </body>
+
 </html>

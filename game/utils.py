@@ -1,4 +1,4 @@
-import random
+import random, heapq
 from .models import Card
 
 
@@ -11,12 +11,9 @@ def initialize_cards():
         Card.objects.create(value=value)
 
 
-stack = []
-def push_to_stack(card):
-    stack.append(card)
+time_heap = []
+def add_time_record(time):
+    heapq.heappush(time_heap, (time, f"{time}s"))
 
-def pop_from_stack():
-    if stack:
-        return stack.pop()
-    else:
-        return None
+def get_top_times(n=3):
+    return heapq.nsmallest(n, time_heap)
